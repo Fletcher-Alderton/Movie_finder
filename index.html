@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movie Search</title>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <form id="searchForm">
+    <label for="searchBox">Search:</label>
+    <input type="text" id="searchBox" name="searchBox" placeholder="Enter a movie name">
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="responseContainer"></div>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+      const searchValue = document.getElementById('searchBox').value;
+      searchMovies(searchValue);
+    });
+
+    async function searchMovies(query) {
+      const url = `https://unogsng.p.rapidapi.com/search?limit=100&subtitle=english&countrylist=78%2C46&query=${encodeURIComponent(query)}&audio=english&country_andorunique=unique&offset=0`;
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': '107300f8aamsh3c15f6fddc3f2ffp174427jsnc53920ea8693',
+          'X-RapidAPI-Host': 'unogsng.p.rapidapi.com'
+        }
+      };
+
+      try {
+        const response = await axios.get(url, options);
+        const result = response.data;
+        displayResponse(result);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function displayResponse(result) {
+      const responseContainer = document.getElementById('responseContainer');
+      responseContainer.innerHTML = JSON.stringify(result, null, 2);
+    }
+  </script>
+</body>
+</html>
