@@ -3,6 +3,45 @@
 <head>
   <title>Movie Search</title>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <style>
+  .movie-card {
+    display: flex;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    padding: 10px;
+  }
+
+  .movie-poster {
+    width: 150px;
+    height: 225px;
+    object-fit: cover;
+    margin-right: 10px;
+  }
+
+  .movie-details {
+    flex: 1;
+  }
+
+  .movie-details h2 {
+    font-size: 18px;
+    margin-top: 0;
+  }
+
+  .movie-details p {
+    margin-top: 5px;
+  }
+
+  .movie-details ul {
+    margin-top: 10px;
+    padding-left: 0;
+  }
+
+  .movie-details li {
+    list-style: none;
+  }
+  </style>
 </head>
 <body>
   <form id="searchForm">
@@ -16,32 +55,79 @@
   <script>
     document.getElementById('searchForm').addEventListener('submit', function(event) {
       event.preventDefault(); // Prevent form submission
-      const searchValue = document.getElementById('searchBox').value;
+      const searchValue = document.getElementById('searchBox').value.trim();
       searchMovies(searchValue);
     });
 
-    async function searchMovies(query) {
-      const url = `https://unogsng.p.rapidapi.com/search?limit=100&subtitle=english&countrylist=78%2C46&query=${encodeURIComponent(query)}&audio=english&country_andorunique=unique&offset=0`;
+    function searchMovies(query) {
       const options = {
         method: 'GET',
+        url: 'https://unogsng.p.rapidapi.com/search',
+        params: {
+          type: 'movie',
+          orderby: 'title',
+          limit: '100',
+          query: query,
+          offset: '0'
+        },
         headers: {
-          'X-RapidAPI-Key': '107300f8aamsh3c15f6fddc3f2ffp174427jsnc53920ea8693',
+          'X-RapidAPI-Key': 'your api key',
           'X-RapidAPI-Host': 'unogsng.p.rapidapi.com'
         }
       };
 
-      try {
-        const response = await axios.get(url, options);
-        const result = response.data;
-        displayResponse(result);
-      } catch (error) {
-        console.error(error);
-      }
+      axios.request(options)
+        .then(function(response) {
+          const result = response.data;
+          displayResponse(result);
+        })
+        .catch(function(error) {
+          console.error(error);
+        });
     }
 
     function displayResponse(result) {
       const responseContainer = document.getElementById('responseContainer');
-      responseContainer.innerHTML = JSON.stringify(result, null, 2);
+      responseContainer.innerHTML = '';
+
+      result.results.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+
+        // Movie Poster
+        const poster = document.createElement('img');
+        poster.src = movie.image;
+        poster.className = 'movie-poster';
+        card.appendChild(poster);
+
+        // Movie Details
+        const detailsContainer = document.createElement('div');
+        detailsContainer.className = 'movie-details';
+
+        // Title
+        const title = document.createElement('h2');
+        title.innerText = movie.title;
+        detailsContainer.appendChild(title);
+
+        // Description
+        const description = document.createElement('p');
+        description.innerText = movie.synopsis;
+        detailsContainer.appendChild(description);
+
+        // Country List
+        const countryList = document.createElement('ul');
+        movie.locations.forEach(location => {
+          const listItem = document.createElement('li');
+          listItem.innerText = location.country;
+          countryList.appendChild(listItem);
+        });
+
+        detailsContainer.appendChild(countryList);
+
+        card.appendChild(detailsContainer);
+
+        responseContainer.appendChild(card);
+      });
     }
   </script>
 </body>
